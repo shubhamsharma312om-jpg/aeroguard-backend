@@ -1,0 +1,16 @@
+[
+  {
+    "timestamp": "2026-05-15T06:02:10.446Z",
+    "message": "[OUTBOUND ALERT] Triggered Level 1 escalation (158 PPM)",
+    "status": "LOW ALERT",
+    "value": 158,
+    "gasType": "Mild CO2 / Human Presence"
+  },
+  {
+    "timestamp": "2026-05-15T06:02:15.655Z",
+    "message": "[OUTBOUND ALERT] Triggered Level 2 escalation (161 PPM)",
+    "status": "MODERATE ALERT",
+    "value": 161,
+    "gasType": "Alcohol / VOC Vapors"
+  }
+]

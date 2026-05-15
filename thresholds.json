@@ -1,0 +1,9 @@
+[
+  { "minPPM": 0, "maxPPM": 129, "state": "SAFE", "gas": "Fresh Air / Oxygen Normal", "color": "CYAN" },
+  { "minPPM": 130, "maxPPM": 159, "state": "LOW ALERT", "gas": "Mild CO2 / Human Presence", "color": "YELLOW" },
+  { "minPPM": 160, "maxPPM": 230, "state": "MODERATE ALERT", "gas": "Alcohol / VOC Vapors", "color": "AMBER" },
+  { "minPPM": 231, "maxPPM": 310, "state": "WARNING", "gas": "Carbon Monoxide / Combustion", "color": "ORANGE" },
+  { "minPPM": 311, "maxPPM": 410, "state": "HIGH ALERT", "gas": "LPG / Smoke / Natural Gas", "color": "RED" },
+  { "minPPM": 411, "maxPPM": 510, "state": "DANGEROUS", "gas": "Toxic Combustion / Heavy Smoke", "color": "DARK RED" },
+  { "minPPM": 511, "maxPPM": 9999, "state": "CRITICAL", "gas": "CRITICAL ATMOSPHERIC HAZARD", "color": "CRIMSON" }
+]
