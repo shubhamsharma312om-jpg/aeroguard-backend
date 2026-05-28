@@ -141,37 +141,37 @@ Recommendation: ${currentLevel >= 5 ? "EVACUATE IMMEDIATELY" : currentLevel >= 3
     console.log(`[ALERT ENGINE] SMS/Email Trigger: Transition to Level ${currentLevel}`);
 
     // --- FIXED EMAIL TRANSPORTER (PORT 587, TLS, IPv4) ---
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 587,
-          secure: false,            // TLS required for port 587
-          family: 4,                // Force IPv4 – fixes ENETUNREACH
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-          },
-          tls: {
-            rejectUnauthorized: false
-          },
-          connectionTimeout: 10000,
-          greetingTimeout: 10000,
-          socketTimeout: 10000
-        });
+   // Replace the entire email sending block (around line 260-290) with this:
 
-        await transporter.sendMail({
-          from: process.env.SMTP_USER,
-          to: process.env.ALERT_RECEIVER || process.env.SMTP_USER,
-          subject: "AEROGUARD PRO ATMOSPHERIC ALERT",
-          html: cinematicEmail
-        });
-        console.log("✅ Email alert sent successfully");
-      } catch (err: any) {
-        console.error("❌ Email sending failed:", err.message);
-      }
-    }
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,              // SSL
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      },
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 30000,  // 30 seconds
+      greetingTimeout: 30000,
+      socketTimeout: 30000
+    });
 
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: process.env.ALERT_RECEIVER || process.env.SMTP_USER,
+      subject: "AEROGUARD PRO ATMOSPHERIC ALERT",
+      html: cinematicEmail
+    });
+    console.log("✅ Email alert sent successfully");
+  } catch (err: any) {
+    console.error("❌ Email sending failed:", err.message);
+  }
+}
     // Twilio SMS
     try {
       if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
