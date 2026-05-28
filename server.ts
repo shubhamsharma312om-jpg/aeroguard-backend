@@ -100,6 +100,18 @@ function getDangerLevel(ppm: number) {
   return 6;
 }
 
+// ======================== FIXED getStatusFromPPM FUNCTION ========================
+function getStatusFromPPM(ppm: number) {
+  if (!Array.isArray(thresholds)) return "UNKNOWN";
+  const t = thresholds.find(r => ppm >= r.minPPM && ppm <= r.maxPPM);
+  if (t) {
+    latestData.gasType = t.gas;
+    return t.state;
+  }
+  return "UNKNOWN";
+}
+// ================================================================================
+
 async function sendAlerts(ppm: number) {
   if (!latestData.isSystemActive || SAFE_MODE) return;
 
@@ -117,8 +129,19 @@ async function sendAlerts(ppm: number) {
   const timestamp = new Date().toLocaleString();
   const statusMsg = getStatusFromPPM(ppm);
   
- const cinematicEmail = 
-<!DOCTYPE html>
+  // HTML email template as a function
+  function getCinematicEmail(ppm: number, currentLevel: number, statusMsg: string): string {
+    const voltage = latestData.voltage.toFixed(2);
+    const gasType = latestData.gasType;
+    const threshold = latestData.threshold;
+    const timestamp = new Date().toLocaleString();
+    let recommendation = "";
+    if (currentLevel >= 5) recommendation = "🚨 EVACUATE IMMEDIATELY. Life‑threatening conditions detected.";
+    else if (currentLevel >= 3) recommendation = "⚠️ Evacuate if sensitive. Monitor continuously.";
+    else if (currentLevel >= 2) recommendation = "💨 Ventilate area immediately. Check gas sources.";
+    else recommendation = "🔍 Monitor closely. No immediate action required.";
+
+    return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -126,20 +149,15 @@ async function sendAlerts(ppm: number) {
 </head>
 <body style="margin:0; padding:0; background:#0a0c12; font-family:'Segoe UI', Arial, sans-serif;">
   <div style="max-width:600px; margin:20px auto; background:linear-gradient(145deg, #0f111a 0%, #080a10 100%); border:2px solid #ff3b3b; border-radius:24px; overflow:hidden; box-shadow:0 0 40px rgba(255,59,59,0.3);">
-    
-    <!-- Header -->
     <div style="background:linear-gradient(90deg, #1a1f2e, #0b0e16); padding:24px 20px; text-align:center; border-bottom:1px solid #ff3b3b30;">
       <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:2px; background:linear-gradient(135deg, #ffffff, #ff8888); -webkit-background-clip:text; background-clip:text; color:transparent;">⚠️ AEROGUARD PRO</h1>
       <p style="margin:8px 0 0; color:#8a94a8; font-size:12px; font-weight:500;">Atmospheric Intelligence Division</p>
     </div>
-
-    <!-- Body -->
     <div style="padding:28px 24px;">
       <div style="background:#1e2436; border-left:6px solid #ff3b3b; border-radius:14px; padding:16px 20px; margin-bottom:24px;">
         <h2 style="margin:0 0 8px; font-size:20px; color:#ff6b6b;">CRITICAL ATMOSPHERIC EVENT</h2>
         <p style="margin:0; color:#cbd5e6; font-size:14px;">Real‑time hazard detected by AeroGuard Pro system.</p>
       </div>
-
       <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
         <tr style="border-bottom:1px solid #2a2f3f;">
           <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">PPM VALUE</td>
@@ -147,11 +165,11 @@ async function sendAlerts(ppm: number) {
         </tr>
         <tr style="border-bottom:1px solid #2a2f3f;">
           <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">VOLTAGE</td>
-          <td style="padding:12px 0; text-align:right; font-family:monospace; font-size:18px; font-weight:bold; color:#00f5d4;">${latestData.voltage.toFixed(2)} V</td>
+          <td style="padding:12px 0; text-align:right; font-family:monospace; font-size:18px; font-weight:bold; color:#00f5d4;">${voltage} V</td>
         </tr>
         <tr style="border-bottom:1px solid #2a2f3f;">
           <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">DETECTED GAS</td>
-          <td style="padding:12px 0; text-align:right; color:#ffb347; font-weight:bold;">${latestData.gasType}</td>
+          <td style="padding:12px 0; text-align:right; color:#ffb347; font-weight:bold;">${gasType}</td>
         </tr>
         <tr style="border-bottom:1px solid #2a2f3f;">
           <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">DANGER LEVEL</td>
@@ -159,51 +177,60 @@ async function sendAlerts(ppm: number) {
         </tr>
         <tr style="border-bottom:1px solid #2a2f3f;">
           <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">THRESHOLD</td>
-          <td style="padding:12px 0; text-align:right; color:#8e9aaf;">${latestData.threshold} PPM</td>
+          <td style="padding:12px 0; text-align:right; color:#8e9aaf;">${threshold} PPM</td>
         </tr>
-        <tr>
+        <tr style="border-bottom:1px solid #2a2f3f;">
           <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">TIMESTAMP</td>
-          <td style="padding:12px 0; text-align:right; color:#8e9aaf;">${new Date().toLocaleString()}</td>
+          <td style="padding:12px 0; text-align:right; color:#8e9aaf;">${timestamp}</td>
         </tr>
       </table>
-
       <div style="background:#1e2436; border-radius:14px; padding:16px; margin-bottom:24px;">
         <p style="margin:0 0 8px; font-weight:700; color:#ffb347;">📋 RECOMMENDATION</p>
-        <p style="margin:0; color:#cbd5e6;">${currentLevel >= 5 ? "🚨 EVACUATE IMMEDIATELY. Life‑threatening conditions detected." : currentLevel >= 3 ? "⚠️ Evacuate if sensitive. Monitor continuously." : currentLevel >= 2 ? "💨 Ventilate area immediately. Check gas sources." : "🔍 Monitor closely. No immediate action required."}</p>
+        <p style="margin:0; color:#cbd5e6;">${recommendation}</p>
       </div>
     </div>
-
-    <!-- Footer -->
     <div style="background:#0b0e16; padding:20px; text-align:center; border-top:1px solid #1e2436;">
       <p style="margin:0 0 8px; font-size:11px; color:#5f6b7a;">AeroGuard Pro — Protecting Human Life Through Atmospheric Intelligence</p>
       <p style="margin:0; font-size:10px; color:#3e4858;">This is an automated alert from your AeroGuard monitoring system.</p>
     </div>
   </div>
 </body>
-</html>
-;
-
-   // Email Alert using Resend
-if (process.env.RESEND_API_KEY) {
-  try {
-    const { Resend } = await import('resend');
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const { error } = await resend.emails.send({
-      from: 'AeroGuard <onboarding@resend.dev>',
-      to: [process.env.ALERT_RECEIVER || process.env.SMTP_USER || 'aerogaursafe@gmail.com'],
-      subject: `AEROGUARD PRO ALERT: ${statusMsg} (Level ${currentLevel})`,
-      html: cinematicEmail,
-      text: cinematicEmail.replace(/<[^>]*>/g, '')
-    });
-    if (error) {
-      console.error("❌ Resend email failed:", error);
-    } else {
-      console.log("✅ Email alert sent via Resend");
-    }
-  } catch (err: any) {
-    console.error("❌ Resend error:", err.message);
+</html>`;
   }
-}
+
+  const cinematicEmail = getCinematicEmail(ppm, currentLevel, statusMsg);
+  const cinematicSms = `AEROGUARD ALERT: ${statusMsg} - ${latestData.gasType} at ${ppm} PPM (${latestData.voltage.toFixed(2)}V) @ ${new Date().toLocaleTimeString()}. Check dashboard.`;
+  
+  let outboundAction = false;
+
+  if (currentLevel > lastSmsLevel && currentLevel >= 1) {
+    outboundAction = true;
+    lastSmsLevel = currentLevel;
+
+    console.log(`[ALERT ENGINE] SMS/Email Trigger: Transition to Level ${currentLevel}`);
+
+    // Email Alert using Resend
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const { Resend } = await import('resend');
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const { error } = await resend.emails.send({
+          from: 'AeroGuard <onboarding@resend.dev>',
+          to: [process.env.ALERT_RECEIVER || process.env.SMTP_USER || 'aerogaursafe@gmail.com'],
+          subject: `AEROGUARD PRO ALERT: ${statusMsg} (Level ${currentLevel})`,
+          html: cinematicEmail,
+          text: cinematicEmail.replace(/<[^>]*>/g, '')
+        });
+        if (error) {
+          console.error("❌ Resend email failed:", error);
+        } else {
+          console.log("✅ Email alert sent via Resend");
+        }
+      } catch (err: any) {
+        console.error("❌ Resend error:", err.message);
+      }
+    }
+
     // Twilio SMS
     try {
       if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
@@ -257,17 +284,7 @@ if (process.env.RESEND_API_KEY) {
   }
 }
 
-function getStatusFromPPM(ppm: number) {
-  if (!Array.isArray(thresholds)) return "UNKNOWN";
-  const t = thresholds.find(r => ppm >= r.minPPM && ppm <= r.maxPPM);
-  if (t) {
-    latestData.gasType = t.gas;
-    return t.state;
-  }
-  return "UNKNOWN";
-}
-
-// --- SERIAL MODE (unchanged) ---
+// --- SERIAL MODE ---
 if (MODE === "SERIAL" && !SAFE_MODE) {
   let port: SerialPort | null = null;
   const POSSIBLE_PORTS = ["/dev/ttyACM0", "/dev/ttyUSB0", "COM3", "COM4", "COM5", "COM6"];
@@ -504,11 +521,13 @@ apiRouter.get("/health", (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
 apiRouter.get("/test-email", async (req, res) => {
   console.log("Manual test triggered");
   await sendAlerts(250);
   res.json({ message: "Test alert sent. Check logs and email." });
 });
+
 apiRouter.all("*", (req, res) => {
   if (req.path !== "/toggle" && req.path !== "/data" && !latestData.isSystemActive) {
     return res.status(503).json({ error: "System in Hibernation. Service Unavailable." });
