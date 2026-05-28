@@ -173,7 +173,7 @@ transporter.sendMail({
 
   to: process.env.ALERT_RECEIVER || process.env.SMTP_USER,
 
-  subject: `⚠️ AEROGUARD PRO — ${currentLevel} ATMOSPHERIC ALERT`,
+  subject: "AEROGUARD PRO ATMOSPHERIC ALERT",
 
   html: `
 ```
