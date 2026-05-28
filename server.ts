@@ -144,23 +144,223 @@ Recommendation: ${currentLevel >= 5 ? "EVACUATE IMMEDIATELY" : currentLevel >= 3
     console.log(`[ALERT ENGINE] SMS/Email Trigger: Transition to Level ${currentLevel}`);
 
     // Email Alert
-    try {
-      if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        });
-        
-        transporter.sendMail({
-          from: process.env.SMTP_USER,
-          to: process.env.ALERT_RECEIVER || process.env.SMTP_USER,
-          subject: `AEROGUARD: LEVEL ${currentLevel} COMPROMISE`,
-          text: cinematicEmail
-        }).catch(err => console.error("SMTP Runtime Error:", err.message));
-      }
-    } catch (e) {
-      console.error("Email setup failure:", e);
-    }
+try {
+
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+
+```
+const transporter = nodemailer.createTransport({
+
+  host: "smtp.gmail.com",
+
+  port: 587,
+
+  secure: false,
+
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  },
+
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+transporter.sendMail({
+
+  from: `"AeroGuard Pro" <${process.env.SMTP_USER}>`,
+
+  to: process.env.ALERT_RECEIVER || process.env.SMTP_USER,
+
+  subject: `⚠️ AEROGUARD PRO — ${currentLevel} ATMOSPHERIC ALERT`,
+
+  html: `
+```
+
+<div style="
+background:#0b1020;
+padding:40px;
+font-family:Arial,sans-serif;
+color:white;
+">
+
+<div style="
+max-width:700px;
+margin:auto;
+background:#111827;
+border:3px solid #ff3b3b;
+border-radius:18px;
+overflow:hidden;
+box-shadow:0 0 30px rgba(255,0,0,0.4);
+">
+
+<div style="
+background:linear-gradient(90deg,#ff0000,#7f1d1d);
+padding:25px;
+text-align:center;
+">
+
+<h1 style="
+margin:0;
+font-size:34px;
+color:white;
+letter-spacing:2px;
+">
+⚠️ AEROGUARD PRO ALERT
+</h1>
+
+<p style="
+margin-top:10px;
+font-size:16px;
+color:#ffe5e5;
+">
+Real-Time Atmospheric Hazard Detection System
+</p>
+
+</div>
+
+<div style="padding:30px;">
+
+<h2 style="color:#ff4d4d;">
+CRITICAL ATMOSPHERIC EVENT DETECTED
+</h2>
+
+<table style="
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+">
+
+<tr>
+<td style="padding:12px;border:1px solid #333;">
+PPM VALUE
+</td>
+
+<td style="
+padding:12px;
+border:1px solid #333;
+color:#00e5ff;
+font-weight:bold;
+">
+${latestData.value}
+</td>
+</tr>
+
+<tr>
+<td style="padding:12px;border:1px solid #333;">
+Voltage
+</td>
+
+<td style="
+padding:12px;
+border:1px solid #333;
+color:#00e5ff;
+font-weight:bold;
+">
+${latestData.voltage}V
+</td>
+</tr>
+
+<tr>
+<td style="padding:12px;border:1px solid #333;">
+Danger Level
+</td>
+
+<td style="
+padding:12px;
+border:1px solid #333;
+color:#ffcc00;
+font-weight:bold;
+">
+${currentLevel}
+</td>
+</tr>
+
+<tr>
+<td style="padding:12px;border:1px solid #333;">
+Timestamp
+</td>
+
+<td style="
+padding:12px;
+border:1px solid #333;
+color:#cbd5e1;
+font-weight:bold;
+">
+${new Date().toLocaleString()}
+</td>
+</tr>
+
+</table>
+
+<div style="
+margin-top:30px;
+padding:20px;
+background:#1f2937;
+border-left:5px solid red;
+border-radius:10px;
+">
+
+<p style="
+margin:0;
+font-size:16px;
+line-height:1.7;
+color:#f3f4f6;
+">
+
+Immediate atmospheric irregularities have been detected by AeroGuard Pro.
+
+Recommended Actions:
+
+• Increase ventilation immediately
+• Check combustion/gas sources
+• Follow emergency safety procedures
+• Monitor atmospheric conditions continuously
+
+</p>
+
+</div>
+
+<div style="
+margin-top:30px;
+text-align:center;
+">
+
+<p style="
+font-size:14px;
+color:#9ca3af;
+">
+AeroGuard Pro — Protecting Human Life Through Atmospheric Intelligence
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+`
+})
+
+```
+.then(() => {
+  console.log("Professional Email Alert Sent");
+})
+
+.catch(err => {
+  console.error("SMTP Runtime Error:", err.message);
+});
+```
+
+}
+
+} catch (e) {
+
+console.error("Email setup failure:", e);
+}
 
     // Twilio SMS
     try {
