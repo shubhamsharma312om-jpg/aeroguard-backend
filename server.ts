@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import cors from "cors";
 import dotenv from "dotenv";
+import { Resend } from 'resend';
 import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import nodemailer from "nodemailer";
@@ -140,36 +141,25 @@ Recommendation: ${currentLevel >= 5 ? "EVACUATE IMMEDIATELY" : currentLevel >= 3
 
     console.log(`[ALERT ENGINE] SMS/Email Trigger: Transition to Level ${currentLevel}`);
 
-    // --- FIXED EMAIL TRANSPORTER (PORT 587, TLS, IPv4) ---
-   // Replace the entire email sending block (around line 260-290) with this:
-
-if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+   // Email Alert using Resend
+if (process.env.RESEND_API_KEY) {
   try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,              // SSL
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
-      },
-      connectionTimeout: 30000,  // 30 seconds
-      greetingTimeout: 30000,
-      socketTimeout: 30000
+    const { Resend } = await import('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { error } = await resend.emails.send({
+      from: 'AeroGuard <onboarding@resend.dev>',
+      to: [process.env.ALERT_RECEIVER || process.env.SMTP_USER || 'aerogaursafe@gmail.com'],
+      subject: `AEROGUARD PRO ALERT: ${statusMsg} (Level ${currentLevel})`,
+      html: cinematicEmail,
+      text: cinematicEmail.replace(/<[^>]*>/g, '')
     });
-
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: process.env.ALERT_RECEIVER || process.env.SMTP_USER,
-      subject: "AEROGUARD PRO ATMOSPHERIC ALERT",
-      html: cinematicEmail
-    });
-    console.log("✅ Email alert sent successfully");
+    if (error) {
+      console.error("❌ Resend email failed:", error);
+    } else {
+      console.log("✅ Email alert sent via Resend");
+    }
   } catch (err: any) {
-    console.error("❌ Email sending failed:", err.message);
+    console.error("❌ Resend error:", err.message);
   }
 }
     // Twilio SMS
@@ -503,3 +493,9 @@ async function startServer() {
 }
 
 startServer();
+
+apiRouter.get("/test-email", async (req, res) => {
+  console.log("Manual test triggered");
+  await sendAlerts(250);
+  res.json({ message: "Test alert sent. Check logs." });
+});
