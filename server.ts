@@ -117,7 +117,7 @@ async function sendAlerts(ppm: number) {
   const timestamp = new Date().toLocaleString();
   const statusMsg = getStatusFromPPM(ppm);
   
- const cinematicEmail = `
+ const cinematicEmail = 
 <!DOCTYPE html>
 <html>
 <head>
@@ -181,7 +181,7 @@ async function sendAlerts(ppm: number) {
   </div>
 </body>
 </html>
-`;
+;
 
    // Email Alert using Resend
 if (process.env.RESEND_API_KEY) {
