@@ -462,7 +462,11 @@ apiRouter.get("/health", (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-
+apiRouter.get("/test-email", async (req, res) => {
+  console.log("Manual test triggered");
+  await sendAlerts(250);
+  res.json({ message: "Test alert sent. Check logs and email." });
+});
 apiRouter.all("*", (req, res) => {
   if (req.path !== "/toggle" && req.path !== "/data" && !latestData.isSystemActive) {
     return res.status(503).json({ error: "System in Hibernation. Service Unavailable." });
@@ -493,9 +497,3 @@ async function startServer() {
 }
 
 startServer();
-
-apiRouter.get("/test-email", async (req, res) => {
-  console.log("Manual test triggered");
-  await sendAlerts(250);
-  res.json({ message: "Test alert sent. Check logs." });
-});
