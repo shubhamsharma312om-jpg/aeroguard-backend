@@ -100,7 +100,7 @@ function getDangerLevel(ppm: number) {
   return 6;
 }
 
-// ======================== FIXED getStatusFromPPM FUNCTION ========================
+// ======================== getStatusFromPPM FUNCTION ========================
 function getStatusFromPPM(ppm: number) {
   if (!Array.isArray(thresholds)) return "UNKNOWN";
   const t = thresholds.find(r => ppm >= r.minPPM && ppm <= r.maxPPM);
@@ -110,7 +110,16 @@ function getStatusFromPPM(ppm: number) {
   }
   return "UNKNOWN";
 }
-// ================================================================================
+
+// ======================== NEW: Recommendation for SMS ========================
+function getRecommendation(ppm: number): string {
+  if (ppm >= 500) return "🚨 EVACUATE IMMEDIATELY. Life-threatening!";
+  if (ppm >= 300) return "⚠️ Evacuate if sensitive. Monitor closely.";
+  if (ppm >= 200) return "💨 Ventilate area immediately.";
+  if (ppm >= 100) return "🔍 Monitor. Consider ventilation.";
+  return "System monitoring. Atmosphere stable.";
+}
+// ============================================================================
 
 async function sendAlerts(ppm: number) {
   if (!latestData.isSystemActive || SAFE_MODE) return;
@@ -129,6 +138,27 @@ async function sendAlerts(ppm: number) {
   const timestamp = new Date().toLocaleString();
   const statusMsg = getStatusFromPPM(ppm);
   
+  // ======================== NEW PROFESSIONAL SMS TEMPLATE ========================
+  const deviceId = latestData.mode === 'ESP32' ? 'ESP32_NODE_01' : 'ARDUINO_NODE_01';
+  const recommendation = getRecommendation(ppm);
+  const cinematicSms = `
+━━━━━━━━━━━━━━━━━━━━
+🚨 AEROGUARD PRO ALERT 🚨
+━━━━━━━━━━━━━━━━━━━━
+
+Status:     ${statusMsg}
+Gas:        ${latestData.gasType}
+PPM:        ${ppm}
+Voltage:    ${latestData.voltage.toFixed(2)}V
+Location:   ${deviceId}
+Time:       ${new Date().toLocaleTimeString()}
+Threshold:  ${latestData.threshold}
+────────────────────
+Action:     ${recommendation}
+━━━━━━━━━━━━━━━━━━━━
+`;
+  // ============================================================================
+
   // HTML email template as a function
   function getCinematicEmail(ppm: number, currentLevel: number, statusMsg: string): string {
     const voltage = latestData.voltage.toFixed(2);
@@ -199,7 +229,6 @@ async function sendAlerts(ppm: number) {
   }
 
   const cinematicEmail = getCinematicEmail(ppm, currentLevel, statusMsg);
-  const cinematicSms = `AEROGUARD ALERT: ${statusMsg} - ${latestData.gasType} at ${ppm} PPM (${latestData.voltage.toFixed(2)}V) @ ${new Date().toLocaleTimeString()}. Check dashboard.`;
   
   let outboundAction = false;
 
