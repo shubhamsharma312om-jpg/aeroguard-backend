@@ -152,6 +152,8 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
 const transporter = nodemailer.createTransport({
 
   host: "smtp.gmail.com",
+  
+  family: 4,
 
   port: 465,
 
