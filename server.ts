@@ -148,7 +148,7 @@ try {
 
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
 
-```
+
 const transporter = nodemailer.createTransport({
 
   host: "smtp.gmail.com",
@@ -176,7 +176,7 @@ transporter.sendMail({
   subject: "AEROGUARD PRO ATMOSPHERIC ALERT",
 
   html: `
-```
+
 
 <div style="
 background:#0b1020;
@@ -345,7 +345,7 @@ AeroGuard Pro — Protecting Human Life Through Atmospheric Intelligence
 `
 })
 
-```
+
 .then(() => {
   console.log("Professional Email Alert Sent");
 })
@@ -353,7 +353,7 @@ AeroGuard Pro — Protecting Human Life Through Atmospheric Intelligence
 .catch(err => {
   console.error("SMTP Runtime Error:", err.message);
 });
-```
+
 
 }
 
