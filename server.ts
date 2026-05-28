@@ -169,7 +169,7 @@ const transporter = nodemailer.createTransport({
 
 transporter.sendMail({
 
-  from: `"AeroGuard Pro" <${process.env.SMTP_USER}>`,
+ from: process.env.SMTP_USER,
 
   to: process.env.ALERT_RECEIVER || process.env.SMTP_USER,
 
