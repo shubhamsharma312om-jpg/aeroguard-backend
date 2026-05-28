@@ -117,29 +117,71 @@ async function sendAlerts(ppm: number) {
   const timestamp = new Date().toLocaleString();
   const statusMsg = getStatusFromPPM(ppm);
   
-  const cinematicEmail = `
-⚠️ AEROGUARD ATMOSPHERIC ALERT ⚠️
+ const cinematicEmail = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AeroGuard Alert</title>
+</head>
+<body style="margin:0; padding:0; background:#0a0c12; font-family:'Segoe UI', Arial, sans-serif;">
+  <div style="max-width:600px; margin:20px auto; background:linear-gradient(145deg, #0f111a 0%, #080a10 100%); border:2px solid #ff3b3b; border-radius:24px; overflow:hidden; box-shadow:0 0 40px rgba(255,59,59,0.3);">
+    
+    <!-- Header -->
+    <div style="background:linear-gradient(90deg, #1a1f2e, #0b0e16); padding:24px 20px; text-align:center; border-bottom:1px solid #ff3b3b30;">
+      <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:2px; background:linear-gradient(135deg, #ffffff, #ff8888); -webkit-background-clip:text; background-clip:text; color:transparent;">⚠️ AEROGUARD PRO</h1>
+      <p style="margin:8px 0 0; color:#8a94a8; font-size:12px; font-weight:500;">Atmospheric Intelligence Division</p>
+    </div>
 
-Timestamp: ${timestamp}
-Sensor Value: ${ppm} PPM
-Voltage: ${latestData.voltage.toFixed(2)} V
-Detected Gas: ${latestData.gasType}
-Danger Level: ${statusMsg} (Level ${currentLevel})
-Threshold: ${latestData.threshold} PPM
-System Mode: ${latestData.mode}
+    <!-- Body -->
+    <div style="padding:28px 24px;">
+      <div style="background:#1e2436; border-left:6px solid #ff3b3b; border-radius:14px; padding:16px 20px; margin-bottom:24px;">
+        <h2 style="margin:0 0 8px; font-size:20px; color:#ff6b6b;">CRITICAL ATMOSPHERIC EVENT</h2>
+        <p style="margin:0; color:#cbd5e6; font-size:14px;">Real‑time hazard detected by AeroGuard Pro system.</p>
+      </div>
 
-Recommendation: ${currentLevel >= 5 ? "EVACUATE IMMEDIATELY" : currentLevel >= 3 ? "Evacuate if sensitive" : currentLevel >= 2 ? "Ventilate area" : "Monitor closely"}
+      <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <tr style="border-bottom:1px solid #2a2f3f;">
+          <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">PPM VALUE</td>
+          <td style="padding:12px 0; text-align:right; font-family:monospace; font-size:18px; font-weight:bold; color:#00f5d4;">${ppm} PPM</td>
+        </tr>
+        <tr style="border-bottom:1px solid #2a2f3f;">
+          <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">VOLTAGE</td>
+          <td style="padding:12px 0; text-align:right; font-family:monospace; font-size:18px; font-weight:bold; color:#00f5d4;">${latestData.voltage.toFixed(2)} V</td>
+        </tr>
+        <tr style="border-bottom:1px solid #2a2f3f;">
+          <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">DETECTED GAS</td>
+          <td style="padding:12px 0; text-align:right; color:#ffb347; font-weight:bold;">${latestData.gasType}</td>
+        </tr>
+        <tr style="border-bottom:1px solid #2a2f3f;">
+          <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">DANGER LEVEL</td>
+          <td style="padding:12px 0; text-align:right; color:#ff3b3b; font-weight:800;">${statusMsg} (Level ${currentLevel})</td>
+        </tr>
+        <tr style="border-bottom:1px solid #2a2f3f;">
+          <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">THRESHOLD</td>
+          <td style="padding:12px 0; text-align:right; color:#8e9aaf;">${latestData.threshold} PPM</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 0; font-weight:700; color:#8e9aaf;">TIMESTAMP</td>
+          <td style="padding:12px 0; text-align:right; color:#8e9aaf;">${new Date().toLocaleString()}</td>
+        </tr>
+      </table>
+
+      <div style="background:#1e2436; border-radius:14px; padding:16px; margin-bottom:24px;">
+        <p style="margin:0 0 8px; font-weight:700; color:#ffb347;">📋 RECOMMENDATION</p>
+        <p style="margin:0; color:#cbd5e6;">${currentLevel >= 5 ? "🚨 EVACUATE IMMEDIATELY. Life‑threatening conditions detected." : currentLevel >= 3 ? "⚠️ Evacuate if sensitive. Monitor continuously." : currentLevel >= 2 ? "💨 Ventilate area immediately. Check gas sources." : "🔍 Monitor closely. No immediate action required."}</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#0b0e16; padding:20px; text-align:center; border-top:1px solid #1e2436;">
+      <p style="margin:0 0 8px; font-size:11px; color:#5f6b7a;">AeroGuard Pro — Protecting Human Life Through Atmospheric Intelligence</p>
+      <p style="margin:0; font-size:10px; color:#3e4858;">This is an automated alert from your AeroGuard monitoring system.</p>
+    </div>
+  </div>
+</body>
+</html>
 `;
-
-  const cinematicSms = `AEROGUARD ALERT: ${statusMsg} - ${latestData.gasType} at ${ppm} PPM (${latestData.voltage.toFixed(2)}V) @ ${new Date().toLocaleTimeString()}. Check dashboard.`;
-  
-  let outboundAction = false;
-
-  if (currentLevel > lastSmsLevel && currentLevel >= 1) {
-    outboundAction = true;
-    lastSmsLevel = currentLevel;
-
-    console.log(`[ALERT ENGINE] SMS/Email Trigger: Transition to Level ${currentLevel}`);
 
    // Email Alert using Resend
 if (process.env.RESEND_API_KEY) {
