@@ -141,22 +141,15 @@ async function sendAlerts(ppm: number) {
   // ======================== NEW PROFESSIONAL SMS TEMPLATE ========================
   const deviceId = latestData.mode === 'ESP32' ? 'ESP32_NODE_01' : 'ARDUINO_NODE_01';
   const recommendation = getRecommendation(ppm);
-  const cinematicSms = `
-━━━━━━━━━━━━━━━━━━━━
-🚨 AEROGUARD PRO ALERT 🚨
-━━━━━━━━━━━━━━━━━━━━
+ const cinematicSms =
+`AEROGUARD ALERT
 
-Status:     ${statusMsg}
-Gas:        ${latestData.gasType}
-PPM:        ${ppm}
-Voltage:    ${latestData.voltage.toFixed(2)}V
-Location:   ${deviceId}
-Time:       ${new Date().toLocaleTimeString()}
-Threshold:  ${latestData.threshold}
-────────────────────
-Action:     ${recommendation}
-━━━━━━━━━━━━━━━━━━━━
-`;
+Status: ${statusMsg}
+Gas: ${latestData.gasType}
+PPM: ${ppm}
+Voltage: ${latestData.voltage.toFixed(2)}V
+
+${recommendation}`;
   // ============================================================================
 
   // HTML email template as a function
